@@ -1,0 +1,16 @@
+{
+  "name": "raylib-4-texture-benchmarks",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "twuky",
+  "license": "ISC",
+  "dependencies": {
+    "node-addon-api": "^4.3.0",
+    "raylib": "^0.8.1"
+  },
+  "gypfile": "true"
+}
