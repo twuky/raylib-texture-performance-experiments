@@ -26,6 +26,15 @@ class Bunny {
 			)
 
 			this.color_buffer = Buffer.from([this.color.r, this.color.g, this.color.b, this.color.a])
+
+			let c = this.color
+			var cr = c.r & 0xFF;
+			var cg = c.g & 0xFF;
+			var cb = c.b & 0xFF;
+			var ca = c.a & 0xFF;
+			var rgb = (cr << 24) + (cg << 16) + (cb << 8) + (ca)
+
+			this.color_int = rgb
 	}
 
 	update() {
@@ -70,6 +79,15 @@ let draw_methods = [
 	},
 
 	{
+		name: 'DrawTexturePointer',
+		args: 4,
+		func: bunny => {
+			r.DrawTexturePointer(bunny_texture_pointer, bunny.pos.x, bunny.pos.y, bunny.color_int)
+		},
+		bunnies: 0
+	},
+
+	{
 		name: 'DrawTextureShortWhite',
 		args: 5,
 		func: bunny => {
@@ -92,13 +110,7 @@ let draw_methods = [
 		name: 'DrawTextureShortInt',
 		args: 6,
 		func: bunny => {
-			let c = bunny.color
-			var r = c.r & 0xFF;
-			var g = c.g & 0xFF;
-			var b = c.b & 0xFF;
-			var a = c.a & 0xFF;
-			var rgb = (r << 24) + (g << 16) + (b << 8) + (a)
-			//r.DrawTextureShortInt(bunny_texture.id, bunny_texture.width, bunny_texture.height, bunny.pos.x, bunny.pos.y, rgb)
+			r.DrawTextureInt(bunny_texture.id, bunny_texture.width, bunny_texture.height, bunny.pos.x, bunny.pos.y, bunny.color_int)
 		},
 		bunnies: 0
 	},
@@ -180,6 +192,7 @@ let draw_methods = [
 ]
 
 let bunny_texture = r.LoadTexture('sprite.png')
+let bunny_texture_pointer = r.GetTexturePointer(bunny_texture)
 let bunnies = []
 for (let i = 0; i < 20000; i++) {
 	bunnies.push(new Bunny())

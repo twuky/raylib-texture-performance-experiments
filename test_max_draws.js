@@ -4,7 +4,42 @@ const {Worker} = require('worker_threads')
 const screenWidth = 1280
 const screenHeight = 720
 
+function LoadTexture(path) {
+	let texture = r.LoadTexture(path)
+	
+	class Tex {
+		#internal_texture
+		#pointer
+		constructor(internal_texture) {
+			this.#internal_texture = internal_texture
+			this.#pointer = r.GetTexturePointer(internal_texture)
+		}
+		get pointer() { return this.#pointer }
+		get id() { return this.#internal_texture.id }
+		get width() { return this.#internal_texture.width }
+		get height() { return this.#internal_texture.height }
+		get mipmaps() { return this.#internal_texture.mipmaps }
+		get format() { return this.#internal_texture.format }
+	}
 
+	return new Tex(texture)
+}
+
+function DrawTexture(texture, x, y, color = null) {
+	let pointer = texture.pointer
+	if (color) {
+		r.DrawTexturePointer(pointer, x, y, color)
+	} else {
+		r.DrawTexturePointerWhite(pointer, x, y)
+	}
+}
+
+cr = 255
+cg = 255
+cb = 255
+ca = 255
+
+console.log(r.GetColor((cr << 24) + (cg << 16) + (cb << 8) + (ca)))
 
 class Bunny {
 
@@ -27,6 +62,16 @@ class Bunny {
 			)
 
 			this.color_buffer = Buffer.from([this.color.r, this.color.g, this.color.b, this.color.a])
+
+
+			let c = this.color
+			var cr = c.r & 0xFF;
+			var cg = c.g & 0xFF;
+			var cb = c.b & 0xFF;
+			var ca = c.a & 0xFF;
+			var rgb = (cr << 24) + (cg << 16) + (cb << 8) + (ca)
+
+			this.color_int = rgb
 	}
 
 	update() {
@@ -78,17 +123,37 @@ let draw_methods = [
 	},
 
 	{
+		name: 'DrawTextureNew',
+		args: 4,
+		func: bunny => {
+			DrawTexture(bunny_texture_wrapper, bunny.pos.x, bunny.pos.y, bunny.color_int)
+		},
+		bunnies: 0
+	},
+
+	{
+		name: 'DrawTextureNewWhite',
+		args: 4,
+		func: bunny => {
+			DrawTexture(bunny_texture_wrapper, bunny.pos.x, bunny.pos.y)
+		},
+		bunnies: 0
+	},
+
+	{
 		name: 'DrawTextureShortInt',
 		args: 6,
 		func: bunny => {
-			let c = bunny.color
-			var r = c.r & 0xFF;
-			var g = c.g & 0xFF;
-			var b = c.b & 0xFF;
-			var a = c.a & 0xFF;
-			var rgb = (r << 24) + (g << 16) + (b << 8) + (a)
+			r.DrawTextureInt(bunny_texture.id, bunny_texture.width, bunny_texture.height, bunny.pos.x, bunny.pos.y, bunny.color_int)
+		},
+		bunnies: 0
+	},
 
-			//r.DrawTextureInt(bunny_texture.id, bunny_texture.width, bunny_texture.height, bunny.pos.x, bunny.pos.y, rgb)
+	{
+		name: 'DrawTexturePointer',
+		args: 4,
+		func: bunny => {
+			r.DrawTexturePointer(bunny_texture_pointer, bunny.pos.x, bunny.pos.y, bunny.color_int)
 		},
 		bunnies: 0
 	},
@@ -188,7 +253,10 @@ let draw_methods = [
 ]
 
 let bunny_texture = r.LoadTexture('sprite.png')
+let bunny_texture_pointer = r.GetTexturePointer(bunny_texture)
 let bunnies = []
+
+let bunny_texture_wrapper = LoadTexture('sprite.png')
 
 let method = 0
 let quit = false

@@ -201,7 +201,7 @@ void BindDrawTextureInt(const Napi::CallbackInfo& info) {
     },
 		info[3].As<Napi::Number>(),
 		info[4].As<Napi::Number>(),
-    GetColor(info[5].As<Napi::Number>().Uint32Value())
+    GetColor(info[5].As<Napi::Number>())
 	);
 }
 
@@ -301,6 +301,42 @@ void BindDrawBunnyBuffer(const Napi::CallbackInfo& info) {
 	);
 }
 
+Napi::Object BindGetColor(const Napi::CallbackInfo& info) {
+	Color obj = GetColor(
+		info[0].As<Napi::Number>()
+	);
+	Napi::Object out = Napi::Object::New(info.Env());
+	out.Set("r", obj.r);
+	out.Set("g", obj.g);
+	out.Set("b", obj.b);
+	out.Set("a", obj.a);
+	return out;
+}
+
+Napi::Number BindGetTexturePointer(const Napi::CallbackInfo& info) {
+  Texture2D tex = TextureFromNAPIObject(info[0].As<Napi::Object>());
+  void* ptr = MemAlloc(sizeof(Texture2D));
+  *(Texture2D*)ptr = tex;
+  return Napi::Number::New(info.Env(), (int64_t) ptr);
+}
+
+void BindDrawTexturePointer(const Napi::CallbackInfo& info) {
+  DrawTexture(
+	  *(Texture2D*)info[0].As<Napi::Number>().Int64Value(),
+		info[1].As<Napi::Number>(),
+		info[2].As<Napi::Number>(),
+    GetColor(info[3].As<Napi::Number>())
+	);
+}
+
+void BindDrawTexturePointerWhite(const Napi::CallbackInfo& info) {
+  DrawTexture(
+	  *(Texture2D*)info[0].As<Napi::Number>().Int64Value(),
+		info[1].As<Napi::Number>(),
+		info[2].As<Napi::Number>(),
+    WHITE
+	);
+}
 
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
 
@@ -432,6 +468,26 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports.Set(
     Napi::String::New(env, "DrawTextureInt"),
     Napi::Function::New(env, BindDrawTextureInt)
+  );
+
+  exports.Set(
+    Napi::String::New(env, "GetColor"),
+    Napi::Function::New(env, BindGetColor)
+  );
+
+  exports.Set(
+    Napi::String::New(env, "GetTexturePointer"),
+    Napi::Function::New(env, BindGetTexturePointer)
+  );
+
+  exports.Set(
+    Napi::String::New(env, "DrawTexturePointer"),
+    Napi::Function::New(env, BindDrawTexturePointer)
+  );
+
+  exports.Set(
+    Napi::String::New(env, "DrawTexturePointerWhite"),
+    Napi::Function::New(env, BindDrawTexturePointerWhite)
   );
 
 
